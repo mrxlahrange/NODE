@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+  <title>ENGLISH</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<div class="page" id="page1">
+  <header>
+    <div class="top">
+      <h1>English</h1>
+      <div class="q">
+        <div class="dropdown">
+          <h2>&#9776;</h2>
+          <div class="dropdown-content">
+            <a onclick="navigateTo('page2')">NOTE BOOK</a>
+            <a onclick="navigateTo('page3')">SQVE NOTE</a>
+            <a onclick="navigateTo('page4')">CHAT ROOM</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+  <main class="BUTTON">
+    <button onclick="navigateTo('page2')">NOTE BOOK</button>
+    <button onclick="navigateTo('page3')">SAVE NOTE</button>
+    <button onclick="navigateTo('page4')">CHAT ROOM</button>
+  </main>
+</div>
+<div class="page" id="page2">
+  <div class="popup-box">
+    <div class="popup">
+      <div class="conten">
+        <heade>
+          <p></p>
+          <i class="uil uil-times"></i>
+        </heade>
+        <form action="#" class="jo">
+          <div class="row title">
+            <labe>Title</labe>
+            <input type="text" spellcheck="false" class="id" />
+          </div>
+          <div class="row description">
+            <labe>Description</labe>
+            <textarea spellcheck="false"></textarea>
+          </div>
+          <button></button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="werap">
+    <li class="add-box">
+      <div class="ico"><i class="uil uil-plus"></i></div>
+    </li>
+  </div>
+  <!--after  -->
+</div>
+<div class="page" id="page3">
+  <header>
+    <div class="top">
+      <h1>English</h1>
+      <button id="openPopup">&#10133;</button>
+    </div>
+  </header>
+  <ul id="texts"></ul>
+  <div class="poopup" id="poopup">
+    <div class="popup-content">
+      <span class="close-btn" id="closePopup">&times;</span>
+      <labe>Description</labe>
+      <textarea id="text-input" placeholder="Publish a text..." autocomplete="off" id="inputField"
+        style="width: 100%; padding: 10px; font-size: 16px;"></textarea>
+      <button onclick="publishText()">Confirm</button>
+    </div>
+  </div>
+</div>
+<div class="page" id="page4">
+  <div id="chat">
+    <ul id="messages"></ul>
+    <div class="inbot">
+      <textarea id="message-input" placeholder="Type a message..." autocomplete="off"></textarea>
+      <button onclick="sendMessage()">&#10148;</button>
+    </div>
+  </div>
+</div>
+</body>
+<script src="index.js"></script>
+<script src="chat.js"></script>
+<script src="script.js"></script>
+</html>

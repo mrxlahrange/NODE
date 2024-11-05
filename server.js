@@ -2,55 +2,62 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-const db = new sqlite3.Database('./chat_app.db'); // قاعدة بيانات دائمة
 
+// التحقق من وجود ملف قاعدة البيانات، وإذا لم يكن موجودًا يتم إنشاؤه تلقائيًا
+const dbFile = './chat_app.db';
+const dbExists = fs.existsSync(dbFile);
+
+const db = new sqlite3.Database(dbFile);
+
+if (!dbExists) {
+    db.serialize(() => {
+        console.log('Creating database and tables...');
+        
+        // إنشاء جداول الرسائل والنصوص عند أول تشغيل
+        db.run("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, senderId TEXT)");
+        db.run("CREATE TABLE IF NOT EXISTS texts (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, senderId TEXT)");
+        
+        console.log('Database and tables created.');
+    });
+} else {
+    console.log('Database already exists. Skipping creation.');
+}
+
+// إعداد مجلد الملفات الثابتة
 app.use(express.static(__dirname));
-
-// إنشاء جداول الرسائل والنصوص إذا لم تكن موجودة
-db.serialize(() => {
-    db.run("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, senderId TEXT)");
-    db.run("CREATE TABLE IF NOT EXISTS texts (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, senderId TEXT)");
-});
 
 io.on('connection', (socket) => {
     console.log('User connected');
 
-    // تحميل الرسائل عند الاتصال
+    // إرسال الرسائل عند الاتصال
     db.all("SELECT * FROM messages", (err, rows) => {
         if (!err) socket.emit('load_messages', rows);
     });
 
-    // تحميل النصوص عند الاتصال
+    // إرسال النصوص عند الاتصال
     db.all("SELECT * FROM texts", (err, rows) => {
         if (!err) socket.emit('load_texts', rows);
     });
 
-    // استقبال رسالة جديدة
+    // استقبال رسالة جديدة وتخزينها في قاعدة البيانات
     socket.on('new_message', (message) => {
         db.run("INSERT INTO messages (content, senderId) VALUES (?, ?)", [message.content, message.senderId], function(err) {
             if (!err) io.emit('message', { id: this.lastID, ...message });
         });
     });
 
-    // استقبال نص جديد
+    // استقبال نص جديد وتخزينه في قاعدة البيانات
     socket.on('new_text', (text) => {
         db.run("INSERT INTO texts (content, senderId) VALUES (?, ?)", [text.content, text.senderId], function(err) {
             if (!err) io.emit('text', { id: this.lastID, ...text });
         });
     });
 
-    // تعديل النص
-    
-    socket.on('edit_text', (text) => {
-        db.run("UPDATE texts SET content = ? WHERE id = ?", [text.content, text.id], function(err) {
-            if (!err) io.emit('text', { id: text.id, content: text.content, senderId: text.senderId });
-        });
-    });
-    
     // حذف رسالة
     socket.on('delete_message', (id) => {
         db.run("DELETE FROM messages WHERE id = ?", [id], function(err) {
@@ -58,17 +65,11 @@ io.on('connection', (socket) => {
         });
     });
 
-    // حذف النص
-    socket.on('delete_text', (id) => {
-        db.run("DELETE FROM texts WHERE id = ?", [id], function(err) {
-            if (!err) io.emit('text_deleted', id);
-        });
-    });
-
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });
 });
-////////////////////////////////////////////////////////////////////////sss
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+server.listen(3000, () => {
+    console.log('Server running on port 3000');
+});
